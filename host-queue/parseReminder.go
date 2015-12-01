@@ -1,5 +1,11 @@
 package hostqueue
 
+import (
+"appengine"
+"bytes"
+"net/http"
+)
+
 func init() {
         http.HandleFunc("/_ah/mail/", incomingMail)
 }
