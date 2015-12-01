@@ -1,7 +1,7 @@
 cron:
 - description: email reminders
   url: /action/email/
-  schedule: every sunday 1600
-  script: _go_app
-  login: admin
+  schedule: every sunday 16:00
+
+
 
