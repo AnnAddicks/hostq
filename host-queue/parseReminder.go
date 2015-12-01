@@ -1,9 +1,13 @@
 package hostqueue
 
 import (
-"appengine"
-"bytes"
-"net/http"
+	"appengine"
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/mail"
+	"net/http"
 )
 
 func init() {
@@ -23,7 +27,23 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 
         //Steps
         //1. Get Sender - is it one of the registered senders in queue and are they the hosting group?
+        m, err := mail.ReadMessage(r)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		header := m.Header
+		from := header.Get("From")
+		//***** Check if they should be responding or if someone is being snarky. ************
+
         //2. Look for Yes/No/Skip
-        //3. If yes or skip, respond with the current turn order
+        body, err := ioutil.ReadAll(m.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%s", body)
+
+
+        //3. If yes or skip, respond with the current turn order, update the order in the group
         //4. If No send an email to the next in line
 }
