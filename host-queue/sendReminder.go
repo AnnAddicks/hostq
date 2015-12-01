@@ -1,4 +1,5 @@
 package hostqueue
+
 import (
         "fmt"
         "net/http"
@@ -11,7 +12,7 @@ import (
 func sendReminder(email string, hostName string, r *http.Request) {
         c := appengine.NewContext(r)
         msg := &mail.Message{
-                Sender:  "Example.com Support <support@example.com>",
+                Sender:  "reminder@hostqueue-1146.appspotmail.com Support <reminder@hostqueue-1146.appspotmail.com>",
                 To:      []string{email},
                 Subject: fmt.Sprintf("%s it is your turn to host", hostName) ,
                 Body:    fmt.Sprintf(hostMessage, hostName),
