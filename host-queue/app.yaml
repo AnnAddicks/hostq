@@ -1,0 +1,26 @@
+application: host-queue
+version: 1
+runtime: go
+api_version: go1
+
+handlers:
+- url: /
+  static_files: index.html
+  upload: index\.html
+
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /js
+  static_dir: js
+
+- url: /css
+  static_dir: css
+
+
+- url: /groups
+  script: _go_app
+
+- url: /group_email
+  script: _go_app
