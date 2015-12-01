@@ -26,5 +26,5 @@ const hostMessage = `
 %s,
 
 It is your turn to host!  
-Respond with 'yes' to host, 'no' to go to the next in line to host, or 'skip' to skip this week and host next week.
+Respond with 'yes' to host, 'no' to go to the next in line to host, or 'skip' for everyone to skip this week and host next week.
 `
