@@ -4,6 +4,7 @@ import (
   "appengine"
   "appengine/datastore"
 
+  "log"
   "net/http"
   "time"
   )
@@ -50,7 +51,7 @@ func (group *Group) save(c appengine.Context) error {
 
   // The Id on the model is not prepopulated so we'll have
   // to append manually
-  category.Id = k.IntID()
+  group.Id = k.IntID()
   return nil
 }
 
@@ -76,11 +77,16 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
   c.Infof("Getting all groups")
+  g, err := GetGroups(c)
 
+  if err != nil {
+  	log.Fatal("Error getting groups: ", err)
+  }
 
   c.Infof("Sending Emails")
+  for _, element := range g {
+  	sendReminder(element.GroupEmail, element.Hosts[0].HostName, r) 
+  }
 }
 
-func GetGroups(r *http.Request) {
-	c := appengine.NewContext(r)
-}
+
