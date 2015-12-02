@@ -28,6 +28,32 @@ type Group struct {
     Hosts [] Host
 }
 
+func (group *Group) key(c appengine.Context) *datastore.Key {
+  // if there is no Id, we want to generate an "incomplete"
+  // one and let datastore determine the key/Id for us
+  if group.Id == 0 {
+    return datastore.NewIncompleteKey(c, "Group", nil)
+  }
+
+  // if Id is already set, we'll just build the Key based
+  // on the one provided.
+  return datastore.NewKey(c, "Group", "", group.Id, nil)
+}
+
+func (group *Group) save(c appengine.Context) error {
+  // reference the key function and generate it
+  // accordingly basically its isNew true/false
+  k, err := datastore.Put(c, group.key(c), group)
+  if err != nil {
+    return err
+  }
+
+  // The Id on the model is not prepopulated so we'll have
+  // to append manually
+  category.Id = k.IntID()
+  return nil
+}
+
 func GetGroups(c appengine.Context) ([]Group, error) {
   q := datastore.NewQuery("Group")
   
@@ -53,7 +79,8 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 
 
   c.Infof("Sending Emails")
+}
 
-
-
+func GetGroups(r *http.Request) {
+	c := appengine.NewContext(r)
 }

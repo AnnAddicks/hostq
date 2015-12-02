@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/mail"
 	"net/http"
+    "regexp"
+    "strings"
 )
 
 func init() {
@@ -40,13 +42,31 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 		//***** Check if they should be responding or if someone is being snarky. ************
 
         //2. Look for Yes/No/Skip
+        yes, err := regexp.Compile(`yes`)
+        no, err := regexp.Compile(`no`)
+        skip, err := regexp.Compile(`skip`)
+
         body, err := ioutil.ReadAll(m.Body)
+        //Convert the byte array to a lower case string
+        n := bytes.IndexByte(body, 0)
+        s := string(body[:n])
+        bodyString := strings.ToLower(s)
 		if err != nil {
 			log.Fatal(err)
 		}
 		fmt.Printf("%s", body)
 
 
-        //3. If yes or skip, respond with the current turn order, update the order in the group
-        //4. If No send an email to the next in line
+        if yes.MatchString(bodyString) == true {
+        	//3. If yes or skip, respond with the current turn order, update the order in the group
+        	fmt.Printf("Match Yes")
+	    } else if skip.MatchString(bodyString) == true {
+	    	//3. If yes or skip, respond with the current turn order
+	        fmt.Printf("Match Skip")
+	    } else if no.MatchString(bodyString) == true {
+	    	//4. If No send an email to the next in line
+	    	fmt.Printf("Match No")
+	    } else {
+	    	c.Infof("Could not find yes/no/skip")
+	    }
 }
