@@ -16,6 +16,7 @@ func init() {
 
 func incomingMail(w http.ResponseWriter, r *http.Request) {
         //Sample from https://cloud.google.com/appengine/docs/go/mail/
+       
         c := appengine.NewContext(r)
         defer r.Body.Close()
         var b bytes.Buffer
@@ -25,15 +26,17 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
         }
         c.Infof("Received mail: %v", b)
 
+
         //Steps
         //1. Get Sender - is it one of the registered senders in queue and are they the hosting group?
-        m, err := mail.ReadMessage(r)
+        m, err := mail.ReadMessage(r.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		header := m.Header
 		from := header.Get("From")
+		c.Infof("Email replied from: %s", from)
 		//***** Check if they should be responding or if someone is being snarky. ************
 
         //2. Look for Yes/No/Skip
