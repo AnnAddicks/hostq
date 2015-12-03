@@ -42,7 +42,33 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 		header := m.Header
 		from := header.Get("From")
 		c.Infof("Email replied from: %s", from)
+		
 		//***** Check if they should be responding or if someone is being snarky. ************
+		groups, err := GetGroups(c)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var g Group
+		for _, group := range groups {
+			for _, host := range group.Hosts {
+				for _, email :range host.Emails {
+					if email == from {
+						g = group
+						break;
+					}
+				}
+				if g != Group{} {
+					break;
+				}
+
+			}
+			if g != Group{} {
+				break;
+			}
+		}
+
+
+
 
         //2. Look for Yes/No/Skip
         yes, err := regexp.Compile(`yes`)
@@ -61,10 +87,11 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 
 
         if yes.MatchString(bodyString) == true {
-        	//3. If yes or skip, respond with the current turn order, update the order in the group
+        	//3. If yes respond with the current turn order, update the order in the group
         	fmt.Printf("Match Yes")
 	    } else if skip.MatchString(bodyString) == true {
-	    	//3. If yes or skip, respond with the current turn order
+	    	//Respond with the current turn order for next week
+
 	        fmt.Printf("Match Skip")
 	    } else if no.MatchString(bodyString) == true {
 	    	//4. If No send an email to the next in line
