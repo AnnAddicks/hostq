@@ -9,8 +9,11 @@ import (
 )
 
 
-func sendReminder(email string, hostName string, r *http.Request) {
+func sendReminder(group Group, r *http.Request) {
         c := appengine.NewContext(r)
+        email := group.GroupEmail
+        hostName := group.Hosts[0].HostName
+
         msg := &mail.Message{
                 Sender:  "reminder@hostqueue-1146.appspotmail.com Support <reminder@hostqueue-1146.appspotmail.com>",
                 To:      []string{email},

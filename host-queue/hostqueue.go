@@ -85,7 +85,7 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 
   c.Infof("Sending Emails")
   for _, element := range g {
-  	sendReminder(element.GroupEmail, element.Hosts[0].HostName, r) 
+  	sendReminder(element, r) 
   }
 }
 
