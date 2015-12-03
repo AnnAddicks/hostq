@@ -1,3 +1,6 @@
+/*
+	1. Get Sender - is it one of the registered senders in queue and are they the hosting group?
+*/
 package hostqueue
 
 import (
