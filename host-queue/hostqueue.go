@@ -27,6 +27,7 @@ type Group struct {
     GroupName string
     GroupEmail string
     Hosts []Host
+    Next Host
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/

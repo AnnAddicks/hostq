@@ -71,7 +71,7 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if !contains(g.Hosts[0].Emails, from) {
+		if !contains(g.Next.Emails, from) {
 			log.Fatal("Sent from the wrong person!\n  Sent from: %s, but expected: %s", from, strings.Join(g.Hosts[0].Emails, ", or "))
 		}
 
@@ -92,21 +92,33 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("%s", body)
 
 
+		//TODO:  Buggy Logic, test when working!
         if yes.MatchString(bodyString) == true {
         	// Update the order in the group
         	hosts := g.Hosts
         	currentHost := hosts[0]
         	hosts = hosts[1:]
         	hosts = append(hosts, currentHost)  //Think slices are by reference??
-
+        	g.next = hosts[0]
         	g.save(c)
         	fmt.Printf("Match Yes")
 	    } else if skip.MatchString(bodyString) == true {
 	    	//Respond with the current turn order for next week
-
+	    	sendSkipMessage(g, r)
 	        fmt.Printf("Match Skip")
 	    } else if no.MatchString(bodyString) == true {
-	    	//4. If No send an email to the next in line
+	    	//Send an email to the next in line
+	    	hosts := g.Hosts
+	    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return contains(hosts[i].Emails, from) }) 
+	    	if(currentIndex < (len(hosts) -1) {
+	    		g.Next = hosts[currentIndex + 1]
+	    	}
+	    	else {
+	    		g.Next = hosts[0]
+	    	}
+
+	    	g.save(c)
+	    	sendReminder(g, c)
 	    	fmt.Printf("Match No")
 	    } else {
 	    	c.Infof("Could not find yes/no/skip")
@@ -122,4 +134,14 @@ func contains(slice []string, item string) bool {
 
     _, ok := set[item] 
     return ok
+}
+
+//http://stackoverflow.com/questions/8307478/go-how-to-find-out-element-position-in-slice
+func SliceIndex(limit int, predicate func(i int) bool) int {
+    for i := 0; i < limit; i++ {
+        if predicate(i) {
+            return i
+        }
+    }
+    return -1
 }
