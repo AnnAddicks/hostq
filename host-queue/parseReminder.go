@@ -93,7 +93,13 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 
 
         if yes.MatchString(bodyString) == true {
-        	//3. If yes respond with the current turn order, update the order in the group
+        	// Update the order in the group
+        	hosts := g.Hosts
+        	currentHost := hosts[0]
+        	hosts = hosts[1:]
+        	hosts = append(hosts, currentHost)  //Think slices are by reference??
+
+        	g.save(c)
         	fmt.Printf("Match Yes")
 	    } else if skip.MatchString(bodyString) == true {
 	    	//Respond with the current turn order for next week

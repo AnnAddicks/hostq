@@ -29,6 +29,7 @@ type Group struct {
     Hosts []Host
 }
 
+//Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
 func (group *Group) key(c appengine.Context) *datastore.Key {
   // if there is no Id, we want to generate an "incomplete"
   // one and let datastore determine the key/Id for us
