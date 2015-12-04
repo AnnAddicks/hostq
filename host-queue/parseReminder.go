@@ -71,7 +71,9 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-
+		if !contains(g.Hosts[0].Emails, from) {
+			log.Fatal("Sent from the wrong person!\n  Sent from: %s, but expected: %s", from, strings.Join(g.Hosts[0].Emails, ", or "))
+		}
 
 
         //2. Look for Yes/No/Skip
@@ -103,4 +105,15 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 	    } else {
 	    	c.Infof("Could not find yes/no/skip")
 	    }
+}
+
+//http://stackoverflow.com/questions/10485743/contains-method-for-a-slice
+func contains(slice []string, item string) bool {
+    set := make(map[string]struct{}, len(slice))
+    for _, s := range slice {
+        set[s] = struct{}{}
+    }
+
+    _, ok := set[item] 
+    return ok
 }
