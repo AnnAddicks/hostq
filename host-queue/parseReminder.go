@@ -48,23 +48,27 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		var g Group
 		for _, group := range groups {
 			for _, host := range group.Hosts {
-				for _, email :range host.Emails {
+				for _, email := range host.Emails {
 					if email == from {
 						g = group
 						break;
 					}
+					continue
 				}
-				if g != Group{} {
+				if g.GroupName != "" {  // cannot use (Group{}) because of []Hosts for some reason
 					break;
 				}
+				continue
 
 			}
-			if g != Group{} {
+			if g.GroupName != "" {
 				break;
 			}
+			continue
 		}
 
 
