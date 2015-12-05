@@ -4,6 +4,8 @@ import (
   "appengine"
   "appengine/datastore"
 
+  "github.com/GoogleCloudPlatform/go-endpoints/endpoints"
+
   "log"
   "net/http"
   "time"
@@ -16,19 +18,19 @@ func init() {
 }
 
 type Host struct {
-	Id int64 `datastore:"-"`
-	HostName string
-	Emails []string
-	TimesHosted int64
-	LastHosted time.Time
+	Id int64 `json:"id" datastore:"-"`
+	HostName string `json:"hostName"`
+	Emails []string `json:"emails"`
+	TimesHosted int64 `json:"timesHosted"`
+	LastHosted time.Time `json:"lastHosted"`
 }
 
 type Group struct {
-    Id   int64  `datastore:"-"`
-    GroupName string
-    GroupEmail string
-    Hosts []Host
-    Next Host
+    Id   int64  `json: "id" datastore:"-"`
+    GroupName string `json:"groupName"`
+    GroupEmail string `json:"groupEmail"`
+    Hosts []Host `json:"hosts"`
+    Next Host `json:"next"`
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
