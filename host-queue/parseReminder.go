@@ -1,5 +1,14 @@
-/*
-	1. Get Sender - is it one of the registered senders in queue and are they the hosting group?
+/*	
+	Script to handle an email response to the reminder.  
+	Steps:
+		1. Get Sender - is it one of the registered senders in queue and are they the hosting group?
+		2. Check if they should be responding or if someone is being snarky.
+		3. Look for Yes/No/Skip
+			3a. Yes - update the order in the group
+			3b. No - send an email to the next in line, update group
+			3c. Skip - respond with the current turn order for next week
+	Notes: Super procedural right now.  I need to clean up the code once I have it working! 
+
 */
 package hostqueue
 
@@ -31,9 +40,7 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
         }
         c.Infof("Received mail: %v", b)
 
-
-        //Steps
-        //1. Get Sender - is it one of the registered senders in queue and are they the hosting group?
+        //Get Sender - is it one of the registered senders in queue and are they the hosting group?
         m, err := mail.ReadMessage(r.Body)
 		if err != nil {
 			log.Fatal(err)
@@ -76,7 +83,7 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 		}
 
 
-        //2. Look for Yes/No/Skip
+        //Look for Yes/No/Skip
         yes, err := regexp.Compile(`yes`)
         no, err := regexp.Compile(`no`)
         skip, err := regexp.Compile(`skip`)
@@ -99,7 +106,7 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
         	currentHost := hosts[0]
         	hosts = hosts[1:]
         	hosts = append(hosts, currentHost)  //Think slices are by reference??
-        	g.next = hosts[0]
+        	g.Next = hosts[0]
         	g.save(c)
         	fmt.Printf("Match Yes")
 	    } else if skip.MatchString(bodyString) == true {
@@ -110,15 +117,14 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 	    	//Send an email to the next in line
 	    	hosts := g.Hosts
 	    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return contains(hosts[i].Emails, from) }) 
-	    	if(currentIndex < (len(hosts) -1) {
+	    	if(currentIndex < (len(hosts) - 1)) {
 	    		g.Next = hosts[currentIndex + 1]
-	    	}
-	    	else {
+	    	} else {
 	    		g.Next = hosts[0]
 	    	}
 
 	    	g.save(c)
-	    	sendReminder(g, c)
+	    	sendReminder(g, r)
 	    	fmt.Printf("Match No")
 	    } else {
 	    	c.Infof("Could not find yes/no/skip")

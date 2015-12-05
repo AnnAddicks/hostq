@@ -12,6 +12,7 @@ import (
 
 func init() {
   http.HandleFunc("/action/email/", SendEmail)
+  http.HandleFunc("/api/group", CreateGroup)
 }
 
 type Host struct {
@@ -89,6 +90,10 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
   for _, element := range g {
   	sendReminder(element, r) 
   }
+}
+
+func CreateGroup (w http.ResponseWriter, r *http.Request) {
+  
 }
 
 
