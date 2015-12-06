@@ -40,19 +40,20 @@ type GroupAPI struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func (GroupAPI) Add(c context.Context, r *Group) (*Group, error) {
+func (GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
-  k := datastore.NewIncompleteKey(c, "Group", quoteKey(c))
+  k, err = g.key(c)
+
 
   //TODO: Oh my, trusing input from a user!!
-  k, err := datastore.Put(c, k, r)
+  k, err := datastore.Put(c, k, g)
   if err != nil {
     return nil, err
   }
-  t.UID = k
-  return t, nil
+  g.Id = k
+  return g, nil
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
