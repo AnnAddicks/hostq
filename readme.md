@@ -13,6 +13,10 @@ Project to determine who is hosting our weekly dinner group.
 
 ## Future Goals
  * Group defined cron schedule
+ * Group Customizations
+  * Can/Should anyone in the group be able to reply for skip
+  * Can the person who wants to host reply with "me"
+  * Give the responder a timeout, if they do not reply then after x number of hours go to the next person. 
  * Front end
  * Keep track of who hosted when to have a year's reflection.
   * You hosted x number of times
