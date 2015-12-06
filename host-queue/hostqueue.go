@@ -5,7 +5,7 @@ import (
   "appengine/datastore"
 
   "github.com/GoogleCloudPlatform/go-endpoints/endpoints"
-
+  //"golang.org/x/net/context"
   "log"
   "net/http"
   "time"
@@ -15,6 +15,18 @@ import (
 func init() {
   http.HandleFunc("/action/email/", SendEmail)
   http.HandleFunc("/api/group", CreateGroup)
+
+  // register the quotes API with cloud endpoints.
+  api, err := endpoints.RegisterService(GroupAPI{}, "groupService", "v1", "Group API", true)
+  if err != nil {
+    panic(err)
+  }
+
+  info := api.MethodByName("Add").Info()
+  info.Name, info.HTTPMethod, info.Path = "addGroup", "POST", "groupService"
+
+  // start handling cloud endpoint requests.
+  endpoints.HandleHTTP()
 }
 
 type Host struct {
@@ -40,11 +52,11 @@ type GroupAPI struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func (GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
+func (GroupAPI) Add(c appengine.Context, g *Group) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
-  k, err = g.key(c)
+  k := g.key(c)
 
 
   //TODO: Oh my, trusing input from a user!!
@@ -52,7 +64,7 @@ func (GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
   if err != nil {
     return nil, err
   }
-  g.Id = k
+  g.Id = k.IntID()
   return g, nil
 }
 
