@@ -1,6 +1,6 @@
 cron:
 - description: email reminders
-  url: /action/email/
+  url: /groupService/email
   schedule: every sunday 16:00
 
 

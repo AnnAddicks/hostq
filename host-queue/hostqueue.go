@@ -95,7 +95,7 @@ func GetGroups(c context.Context) ([]Group, error) {
   return groups, nil
 }
 
-func SendEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
+func  (GroupAPI) SendEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
   g, err := GetGroups(c)
 
@@ -122,7 +122,7 @@ func init() {
     panic(err)
   }
 
-  info := api.MethodByName("Email").Info()
+  info := api.MethodByName("SendEmail").Info()
   info.Name, info.HTTPMethod, info.Path = "emailGroup", "GET", "groupService/email"
 
   info = api.MethodByName("Add").Info()
