@@ -15,6 +15,7 @@ package hostqueue
 import (
 	"appengine"
 	"bytes"
+	"golang.org/x/net/context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -25,20 +26,20 @@ import (
 )
 
 func init() {
-        http.HandleFunc("/_ah/mail/", incomingMail)
+        
 }
 
-func incomingMail(w http.ResponseWriter, r *http.Request) {
+func incomingMail(c context.Context, w http.ResponseWriter, r *http.Request) {
         //Sample from https://cloud.google.com/appengine/docs/go/mail/
        
-        c := appengine.NewContext(r)
+        ctx := appengine.NewContext(r)
         defer r.Body.Close()
         var b bytes.Buffer
         if _, err := b.ReadFrom(r.Body); err != nil {
-                c.Errorf("Error reading body: %v", err)
+                ctx.Errorf("Error reading body: %v", err)
                 return
         }
-        c.Infof("Received mail: %v", b)
+        ctx.Infof("Received mail: %v", b)
 
         //Get Sender - is it one of the registered senders in queue and are they the hosting group?
         m, err := mail.ReadMessage(r.Body)
@@ -48,7 +49,7 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 
 		header := m.Header
 		from := header.Get("From")
-		c.Infof("Email replied from: %s", from)
+		ctx.Infof("Email replied from: %s", from)
 		
 		//***** Check if they should be responding or if someone is being snarky. ************
 		groups, err := GetGroups(c)
@@ -127,7 +128,7 @@ func incomingMail(w http.ResponseWriter, r *http.Request) {
 	    	sendReminder(g, r)
 	    	fmt.Printf("Match No")
 	    } else {
-	    	c.Infof("Could not find yes/no/skip")
+	    	ctx.Infof("Could not find yes/no/skip")
 	    }
 }
 

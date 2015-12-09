@@ -1,33 +1,14 @@
 package hostqueue
 
 import (
-  "appengine"
-  "appengine/datastore"
-
+  "google.golang.org/appengine/datastore"
   "github.com/GoogleCloudPlatform/go-endpoints/endpoints"
-  //"golang.org/x/net/context"
+  "golang.org/x/net/context"
   "log"
   "net/http"
   "time"
   )
 
-
-func init() {
-  http.HandleFunc("/action/email/", SendEmail)
-  http.HandleFunc("/api/group", CreateGroup)
-
-  // register the quotes API with cloud endpoints.
-  api, err := endpoints.RegisterService(GroupAPI{}, "groupService", "v1", "Group API", true)
-  if err != nil {
-    panic(err)
-  }
-
-  info := api.MethodByName("Add").Info()
-  info.Name, info.HTTPMethod, info.Path = "addGroup", "POST", "groupService"
-
-  // start handling cloud endpoint requests.
-  endpoints.HandleHTTP()
-}
 
 type Host struct {
 	Id int64 `json:"id" datastore:"-"`
@@ -52,7 +33,7 @@ type GroupAPI struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func (GroupAPI) Add(c appengine.Context, g *Group) (*Group, error) {
+func (GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
@@ -69,19 +50,21 @@ func (GroupAPI) Add(c appengine.Context, g *Group) (*Group, error) {
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
-func (group *Group) key(c appengine.Context) *datastore.Key {
+func (group *Group) key(c context.Context) *datastore.Key {
   // if there is no Id, we want to generate an "incomplete"
   // one and let datastore determine the key/Id for us
-  if group.Id == 0 {
-    return datastore.NewIncompleteKey(c, "Group", nil)
-  }
+  //if group.Id == 0 {
+  //  return datastore.NewIncompleteKey(c, "Group", nil)
+  //}
 
   // if Id is already set, we'll just build the Key based
   // on the one provided.
-  return datastore.NewKey(c, "Group", "", group.Id, nil)
+  //return datastore.NewKey(c, "Group", "", group.Id, nil)
+
+  return datastore.NewKey(c, "Group", "default_group", 0, nil)
 }
 
-func (group *Group) save(c appengine.Context) error {
+func (group *Group) save(c context.Context) error {
   // reference the key function and generate it
   // accordingly basically its isNew true/false
   k, err := datastore.Put(c, group.key(c), group)
@@ -95,7 +78,7 @@ func (group *Group) save(c appengine.Context) error {
   return nil
 }
 
-func GetGroups(c appengine.Context) ([]Group, error) {
+func GetGroups(c context.Context) ([]Group, error) {
   q := datastore.NewQuery("Group")
   
   var groups []Group
@@ -112,18 +95,14 @@ func GetGroups(c appengine.Context) ([]Group, error) {
   return groups, nil
 }
 
-func SendEmail(w http.ResponseWriter, r *http.Request) {
-  c := appengine.NewContext(r)
+func SendEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-
-  c.Infof("Getting all groups")
   g, err := GetGroups(c)
 
   if err != nil {
   	log.Fatal("Error getting groups: ", err)
   }
 
-  c.Infof("Sending Emails")
   for _, element := range g {
   	sendReminder(element, r) 
   }
@@ -133,4 +112,26 @@ func CreateGroup (w http.ResponseWriter, r *http.Request) {
   
 }
 
+func init() {
+  //http.HandleFunc("/action/email/", SendEmail)
+  //http.HandleFunc("/api/group", CreateGroup)
 
+  // register the quotes API with cloud endpoints.
+  api, err := endpoints.RegisterService(GroupAPI{}, "groupService", "v1", "Group API", true)
+  if err != nil {
+    panic(err)
+  }
+
+  info := api.MethodByName("Email").Info()
+  info.Name, info.HTTPMethod, info.Path = "emailGroup", "GET", "groupService/email"
+
+  info = api.MethodByName("Add").Info()
+  info.Name, info.HTTPMethod, info.Path = "addGroup", "POST", "groupService"
+
+  //http.HandleFunc("/_ah/mail/", incomingMail)
+  info = api.MethodByName("Parse").Info()
+  info.Name, info.HTTPMethod, info.Path = "parseEmail", "GET", "/_ah/mail/"
+
+  // start handling cloud endpoint requests.
+  endpoints.HandleHTTP()
+}
