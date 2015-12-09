@@ -33,7 +33,7 @@ type GroupAPI struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func (GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
+func (gAPI *GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
@@ -95,7 +95,8 @@ func GetGroups(c context.Context) ([]Group, error) {
   return groups, nil
 }
 
-func  (GroupAPI) SendEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
+//func  (gAPI *GroupAPI) SendEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
+func  (gAPI *GroupAPI) List(c context.Context, w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
   g, err := GetGroups(c)
 
@@ -108,6 +109,10 @@ func  (GroupAPI) SendEmail(c context.Context, w http.ResponseWriter, r *http.Req
   }
 }
 
+func (gAPI *GroupAPI) ParseEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
+  incomingMail(c, w, r)
+}
+
 func CreateGroup (w http.ResponseWriter, r *http.Request) {
   
 }
@@ -116,21 +121,22 @@ func init() {
   //http.HandleFunc("/action/email/", SendEmail)
   //http.HandleFunc("/api/group", CreateGroup)
 
+  
   // register the quotes API with cloud endpoints.
-  api, err := endpoints.RegisterService(GroupAPI{}, "groupService", "v1", "Group API", true)
+  api, err := endpoints.RegisterService(&GroupAPI{}, "groupService", "v1", "Group API", true)
   if err != nil {
     panic(err)
   }
 
-  info := api.MethodByName("SendEmail").Info()
-  info.Name, info.HTTPMethod, info.Path = "emailGroup", "GET", "groupService/email"
-
-  info = api.MethodByName("Add").Info()
+  info := api.MethodByName("Add").Info()
   info.Name, info.HTTPMethod, info.Path = "addGroup", "POST", "groupService"
 
+  info = api.MethodByName("List").Info()
+  info.Name, info.HTTPMethod, info.Path = "emailGroup", "GET", "groupService/email"
+
   //http.HandleFunc("/_ah/mail/", incomingMail)
-  info = api.MethodByName("Parse").Info()
-  info.Name, info.HTTPMethod, info.Path = "parseEmail", "GET", "/_ah/mail/"
+  //info = api.MethodByName("ParseEmail").Info()
+  //info.Name, info.HTTPMethod, info.Path = "parseEmail", "GET", "/_ah/mail/"
 
   // start handling cloud endpoint requests.
   endpoints.HandleHTTP()

@@ -29,7 +29,7 @@ func init() {
         
 }
 
-func  (GroupAPI) ParseEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
+func incomingMail(c context.Context, w http.ResponseWriter, r *http.Request) {
         //Sample from https://cloud.google.com/appengine/docs/go/mail/
        
         ctx := appengine.NewContext(r)
