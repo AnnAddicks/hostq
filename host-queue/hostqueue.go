@@ -2,8 +2,7 @@ package hostqueue
 
 import (
   "google.golang.org/appengine/datastore"
-  "github.com/GoogleCloudPlatform/go-endpoints/endpoints"
-  "golang.org/x/net/context"
+  "github.com/go-martini/martini"
   "log"
   "net/http"
   "time"
@@ -33,7 +32,7 @@ type GroupAPI struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func (gAPI *GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
+func (gAPI *GroupAPI) Add(c martini.Context, g *Group) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
@@ -50,7 +49,7 @@ func (gAPI *GroupAPI) Add(c context.Context, g *Group) (*Group, error) {
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
-func (group *Group) key(c context.Context) *datastore.Key {
+func (group *Group) key(c martini.Context) *datastore.Key {
   // if there is no Id, we want to generate an "incomplete"
   // one and let datastore determine the key/Id for us
   //if group.Id == 0 {
@@ -64,7 +63,7 @@ func (group *Group) key(c context.Context) *datastore.Key {
   return datastore.NewKey(c, "Group", "default_group", 0, nil)
 }
 
-func (group *Group) save(c context.Context) error {
+func (group *Group) save(c martini.Context) error {
   // reference the key function and generate it
   // accordingly basically its isNew true/false
   k, err := datastore.Put(c, group.key(c), group)
@@ -78,7 +77,7 @@ func (group *Group) save(c context.Context) error {
   return nil
 }
 
-func GetGroups(c context.Context) ([]Group, error) {
+func GetGroups(c martini.Context) ([]Group, error) {
   q := datastore.NewQuery("Group")
   
   var groups []Group
@@ -95,8 +94,7 @@ func GetGroups(c context.Context) ([]Group, error) {
   return groups, nil
 }
 
-//func  (gAPI *GroupAPI) SendEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
-func  (gAPI *GroupAPI) List(c context.Context, w http.ResponseWriter, r *http.Request) {
+func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
   g, err := GetGroups(c)
 
@@ -109,24 +107,16 @@ func  (gAPI *GroupAPI) List(c context.Context, w http.ResponseWriter, r *http.Re
   }
 }
 
-func (gAPI *GroupAPI) ParseEmail(c context.Context, w http.ResponseWriter, r *http.Request) {
-  incomingMail(c, w, r)
-}
 
-func CreateGroup (w http.ResponseWriter, r *http.Request) {
-  
-}
 
 func init() {
-  //http.HandleFunc("/action/email/", SendEmail)
-  //http.HandleFunc("/api/group", CreateGroup)
-
+   m := martini.Classic()
+   
+   m.Get("/_ah/mail/", IncomingMail)
+   m.Post("/group/add", )
+   m.Run()
   
-  // register the quotes API with cloud endpoints.
-  api, err := endpoints.RegisterService(&GroupAPI{}, "groupService", "v1", "Group API", true)
-  if err != nil {
-    panic(err)
-  }
+
 
   info := api.MethodByName("Add").Info()
   info.Name, info.HTTPMethod, info.Path = "addGroup", "POST", "groupService"
