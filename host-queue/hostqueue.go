@@ -1,6 +1,7 @@
 package hostqueue
 
 import (
+  "appengine"
   "google.golang.org/appengine/datastore"
   "github.com/go-martini/martini"
   "log"
@@ -25,22 +26,20 @@ type Group struct {
     Next Host `json:"next"`
 }
 
-// A QuotesAPI struct defines all the endpoints of the quotes API.
-// It will have functions for CRUD like Add, List etc.
-type GroupAPI struct {
-}
+
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func (gAPI *GroupAPI) Add(c martini.Context, g *Group) (*Group, error) {
+func  Add(c martini.Context, r *http.Request, g *Group) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
-  k := g.key(c)
+  ctx := appengine.NewContext(r)
+  k := g.key(ctx)
 
 
   //TODO: Oh my, trusing input from a user!!
-  k, err := datastore.Put(c, k, g)
+  k, err := datastore.Put(ctx, k, g)
   if err != nil {
     return nil, err
   }
@@ -113,21 +112,9 @@ func init() {
    m := martini.Classic()
    
    m.Get("/_ah/mail/", IncomingMail)
-   m.Post("/group/add", )
+   m.Post("/group/add", Add)
+   m.Get("/group/action/email", SendEmail)
+   
    m.Run()
   
-
-
-  info := api.MethodByName("Add").Info()
-  info.Name, info.HTTPMethod, info.Path = "addGroup", "POST", "groupService"
-
-  info = api.MethodByName("List").Info()
-  info.Name, info.HTTPMethod, info.Path = "emailGroup", "GET", "groupService/email"
-
-  //http.HandleFunc("/_ah/mail/", incomingMail)
-  //info = api.MethodByName("ParseEmail").Info()
-  //info.Name, info.HTTPMethod, info.Path = "parseEmail", "GET", "/_ah/mail/"
-
-  // start handling cloud endpoint requests.
-  endpoints.HandleHTTP()
 }
