@@ -2,7 +2,7 @@ package hostqueue
 
 import (
   "appengine"
-  "google.golang.org/appengine/datastore"
+  "appengine/datastore"
   "github.com/go-martini/martini"
   "log"
   "net/http"
@@ -48,7 +48,7 @@ func  Add(c martini.Context, r *http.Request, g *Group) (*Group, error) {
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
-func (group *Group) key(c martini.Context) *datastore.Key {
+func (group *Group) key(c appengine.Context) *datastore.Key {
   // if there is no Id, we want to generate an "incomplete"
   // one and let datastore determine the key/Id for us
   //if group.Id == 0 {
@@ -62,10 +62,10 @@ func (group *Group) key(c martini.Context) *datastore.Key {
   return datastore.NewKey(c, "Group", "default_group", 0, nil)
 }
 
-func (group *Group) save(c martini.Context) error {
+func (group *Group) save(ctx appengine.Context) error {
   // reference the key function and generate it
   // accordingly basically its isNew true/false
-  k, err := datastore.Put(c, group.key(c), group)
+  k, err := datastore.Put(ctx, group.key(ctx), group)
   if err != nil {
     return err
   }
@@ -76,11 +76,11 @@ func (group *Group) save(c martini.Context) error {
   return nil
 }
 
-func GetGroups(c martini.Context) ([]Group, error) {
+func GetGroups(ctx appengine.Context) ([]Group, error) {
   q := datastore.NewQuery("Group")
-  
+
   var groups []Group
-  keys, err := q.GetAll(c, &groups)
+  keys, err := q.GetAll(ctx, &groups)
   if err != nil {
     return nil, err
   }
@@ -94,8 +94,9 @@ func GetGroups(c martini.Context) ([]Group, error) {
 }
 
 func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
+  ctx := appengine.NewContext(r)
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-  g, err := GetGroups(c)
+  g, err := GetGroups(ctx)
 
   if err != nil {
   	log.Fatal("Error getting groups: ", err)

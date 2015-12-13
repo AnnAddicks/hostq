@@ -52,7 +52,7 @@ func IncomingMail(c martini.Context, w http.ResponseWriter, r *http.Request) {
 		ctx.Infof("Email replied from: %s", from)
 		
 		//***** Check if they should be responding or if someone is being snarky. ************
-		groups, err := GetGroups(c)
+		groups, err := GetGroups(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -108,7 +108,7 @@ func IncomingMail(c martini.Context, w http.ResponseWriter, r *http.Request) {
         	hosts = hosts[1:]
         	hosts = append(hosts, currentHost)  //Think slices are by reference??
         	g.Next = hosts[0]
-        	g.save(c)
+        	g.save(ctx)
         	fmt.Printf("Match Yes")
 	    } else if skip.MatchString(bodyString) == true {
 	    	//Respond with the current turn order for next week
@@ -124,7 +124,7 @@ func IncomingMail(c martini.Context, w http.ResponseWriter, r *http.Request) {
 	    		g.Next = hosts[0]
 	    	}
 
-	    	g.save(c)
+	    	g.save(ctx)
 	    	sendReminder(g, r)
 	    	fmt.Printf("Match No")
 	    } else {
