@@ -108,14 +108,17 @@ func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 
-
 func init() {
    m := martini.Classic()
    
    m.Get("/_ah/mail/", IncomingMail)
    m.Post("/group/add", Add)
    m.Get("/group/action/email", SendEmail)
-   
-   m.Run()
-  
+
+   m.Get("/", func() string {
+     return "hostq"
+   })
+
+
+   http.Handle("/", m)
 }
