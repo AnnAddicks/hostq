@@ -3,8 +3,8 @@ package hostqueue
 import (
   "appengine"
   "appengine/datastore"
+  "encoding/json"
   "github.com/go-martini/martini"
-  "log"
   "net/http"
   "time"
   )
