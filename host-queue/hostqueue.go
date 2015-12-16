@@ -30,11 +30,18 @@ type Group struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func  Add(c martini.Context, r *http.Request, g *Group) (*Group, error) {
+func  Add(c martini.Context, r *http.Request) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
   ctx := appengine.NewContext(r)
+
+  var group *Group
+
+  err := json.NewDecoder(r.Body).Decode(&group)
+  if err != nil {
+    panic(err)
+  }
   k := g.key(ctx)
 
 
@@ -99,7 +106,7 @@ func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
   g, err := GetGroups(ctx)
 
   if err != nil {
-  	log.Fatal("Error getting groups: ", err)
+  	panic("Error getting groups: ", err)
   }
 
   for _, element := range g {
