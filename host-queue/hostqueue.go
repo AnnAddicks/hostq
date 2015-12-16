@@ -42,16 +42,16 @@ func  Add(c martini.Context, r *http.Request) (*Group, error) {
   if err != nil {
     panic(err)
   }
-  k := g.key(ctx)
+  k := group.key(ctx)
 
 
   //TODO: Oh my, trusing input from a user!!
-  k, err := datastore.Put(ctx, k, g)
+  k, err = datastore.Put(ctx, k, group)
   if err != nil {
     return nil, err
   }
-  g.Id = k.IntID()
-  return g, nil
+  group.Id = k.IntID()
+  return group, nil
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
@@ -106,7 +106,7 @@ func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
   g, err := GetGroups(ctx)
 
   if err != nil {
-  	panic("Error getting groups: ", err)
+  	panic(err)
   }
 
   for _, element := range g {
