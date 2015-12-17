@@ -15,7 +15,6 @@ package hostqueue
 import (
 	"appengine"
 	"bytes"
-	"github.com/go-martini/martini"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,7 +28,7 @@ func init() {
         
 }
 
-func IncomingMail(c martini.Context, w http.ResponseWriter, r *http.Request) {
+func IncomingMail(w http.ResponseWriter, r *http.Request) {
         //Sample from https://cloud.google.com/appengine/docs/go/mail/
        
         ctx := appengine.NewContext(r)

@@ -4,7 +4,6 @@ import (
   "appengine"
   "appengine/datastore"
   "encoding/json"
-  "github.com/go-martini/martini"
   "net/http"
   "time"
   )
@@ -30,7 +29,7 @@ type Group struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func  Add(c martini.Context, r *http.Request) (*Group, error) {
+func  Add(w http.ResponseWriter, r *http.Request) (*Group, error) {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
@@ -100,7 +99,7 @@ func GetGroups(ctx appengine.Context) ([]Group, error) {
   return groups, nil
 }
 
-func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
+func  SendEmail(w http.ResponseWriter, r *http.Request) {
   ctx := appengine.NewContext(r)
   w.Header().Set("Content-Type", "text/plain; charset=utf-8")
   g, err := GetGroups(ctx)
@@ -116,16 +115,10 @@ func  SendEmail(c martini.Context, w http.ResponseWriter, r *http.Request) {
 
 
 func init() {
-   m := martini.Classic()
-   
-   m.Get("/_ah/mail/", IncomingMail)
-   m.Post("/group/add", Add)
-   m.Get("/group/action/email", SendEmail)
-
-   m.Get("/", func() string {
+   http.HandleFunc("/", func() string {
      return "hostq"
    })
-
-
-   http.Handle("/", m)
+   http.HandleFunc("/_ah/mail/", IncomingMail)
+   http.HandleFunc("/group/add", Add)
+   http.HandleFunc("/group/action/email", SendEmail)
 }
