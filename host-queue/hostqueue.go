@@ -29,28 +29,37 @@ type Group struct {
 
 // Add creates a new quote given the fields in AddRequest, stores it in the
 // datastore, and returns it.
-func  Add(w http.ResponseWriter, r *http.Request) (*Group, error) {
+func  Add(w http.ResponseWriter, r *http.Request)  {
   // We set the same parent key on every Quote entity to ensure each Quote
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
-  ctx := appengine.NewContext(r)
+  if r.Method == "POST" {
+    ctx := appengine.NewContext(r)
+    var group *Group
 
-  var group *Group
+    err := json.NewDecoder(r.Body).Decode(&group)
+    if err != nil {
+      panic(err)
+    }
+    k := group.key(ctx)
 
-  err := json.NewDecoder(r.Body).Decode(&group)
-  if err != nil {
-    panic(err)
+
+    //TODO: Oh my, trusing input from a user!!
+    k, err = datastore.Put(ctx, k, group)
+    if err != nil {
+      w.Header().Set("Content-Type", "application/json")
+      panic(err)
+    }
+    group.Id = k.IntID()
+    g, err := json.Marshal(group)
+    if err != nil {
+      panic(err)  
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(g)
+  } else {
+     http.Error(w, "Invalid request method.", 405)
   }
-  k := group.key(ctx)
-
-
-  //TODO: Oh my, trusing input from a user!!
-  k, err = datastore.Put(ctx, k, group)
-  if err != nil {
-    return nil, err
-  }
-  group.Id = k.IntID()
-  return group, nil
 }
 
 //Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
@@ -115,8 +124,8 @@ func  SendEmail(w http.ResponseWriter, r *http.Request) {
 
 
 func init() {
-   http.HandleFunc("/", func() string {
-     return "hostq"
+   http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request)  {
+      w.Write([]byte("hostq")) 
    })
    http.HandleFunc("/_ah/mail/", IncomingMail)
    http.HandleFunc("/group/add", Add)
