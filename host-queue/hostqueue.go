@@ -12,7 +12,7 @@ import (
 type Host struct {
 	Id int64 `json:"id" datastore:"-"`
 	HostName string `json:"hostName"`
-	Emails []string `json:"emails"`
+	Emails string `json:"emails"`
 	TimesHosted int64 `json:"timesHosted"`
 	LastHosted time.Time `json:"lastHosted"`
 }

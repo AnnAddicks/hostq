@@ -59,12 +59,9 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 		var g Group
 		for _, group := range groups {
 			for _, host := range group.Hosts {
-				for _, email := range host.Emails {
-					if email == from {
-						g = group
-						break;
-					}
-					continue
+				if strings.Contains(host.Emails, from) {
+					g = group
+					break;
 				}
 				if g.GroupName != "" {  // cannot use (Group{}) because of []Hosts for some reason
 					break;
@@ -78,8 +75,8 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if !contains(g.Next.Emails, from) {
-			log.Fatal("Sent from the wrong person!\n  Sent from: %s, but expected: %s", from, strings.Join(g.Hosts[0].Emails, ", or "))
+		if !strings.Contains(g.Next.Emails, from) {
+			log.Fatal("Sent from the wrong person!\n  Sent from: %s, but expected: %s", from, g.Hosts[0].Emails)
 		}
 
 
@@ -116,7 +113,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 	    } else if no.MatchString(bodyString) == true {
 	    	//Send an email to the next in line
 	    	hosts := g.Hosts
-	    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return contains(hosts[i].Emails, from) }) 
+	    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return strings.Contains(hosts[i].Emails, from) }) 
 	    	if(currentIndex < (len(hosts) - 1)) {
 	    		g.Next = hosts[currentIndex + 1]
 	    	} else {
