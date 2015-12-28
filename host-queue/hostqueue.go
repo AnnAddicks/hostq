@@ -117,6 +117,7 @@ func  SendEmail(w http.ResponseWriter, r *http.Request) {
   	panic(err)
   }
 
+  ctx.Infof("Groups: %v", g)
   for _, element := range g {
   	sendReminder(element, r) 
   }
@@ -127,7 +128,7 @@ func init() {
    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request)  {
       w.Write([]byte("hostq")) 
    })
-   http.HandleFunc("/_ah/mail/", IncomingMail)
+   http.HandleFunc("/_ah/mail/reminder", IncomingMail)
    http.HandleFunc("/group/add", Add)
    http.HandleFunc("/group/action/email", SendEmail)
 }

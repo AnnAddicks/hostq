@@ -8,6 +8,7 @@
 			3b. No - send an email to the next in line, update group
 			3c. Skip - respond with the current turn order for next week
 	Notes: Super procedural right now.  I need to clean up the code once I have it working! 
+	and wow! look at the use of 3 different logging!
 
 */
 package hostqueue
