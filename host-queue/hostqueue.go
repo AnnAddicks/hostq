@@ -128,7 +128,8 @@ func init() {
    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request)  {
       w.Write([]byte("hostq")) 
    })
-   http.HandleFunc("/_ah/mail/reminder", IncomingMail)
+                             
+   http.HandleFunc("/_ah/mail/reminder@hostqueue-1146.appspotmail.com", IncomingMail)
    http.HandleFunc("/group/add", Add)
    http.HandleFunc("/group/action/email", SendEmail)
 }
