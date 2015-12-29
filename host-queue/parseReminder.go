@@ -15,8 +15,6 @@ package hostqueue
 
 import (
 	"appengine"
-	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/mail"
@@ -34,12 +32,6 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
        
         ctx := appengine.NewContext(r)
         defer r.Body.Close()
-        var b bytes.Buffer
-        if _, err := b.ReadFrom(r.Body); err != nil {
-                ctx.Errorf("Error reading body: %v", err)
-                return
-        }
-        ctx.Infof("Received mail: %v", b)
 
         //Get Sender - is it one of the registered senders in queue and are they the hosting group?
         m, err := mail.ReadMessage(r.Body)
@@ -47,8 +39,10 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		header := m.Header
-		from := header.Get("From")
+		
+		from := m.Header.Get("From")
+		from = strings.Split(from, "<")[1]
+		from = strings.Split(from, ">")[0]
 		ctx.Infof("Email replied from: %s", from)
 		
 		//***** Check if they should be responding or if someone is being snarky. ************
@@ -87,15 +81,15 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
         skip, err := regexp.Compile(`skip`)
 
         body, err := ioutil.ReadAll(m.Body)
-        //Convert the byte array to a lower case string
-        n := bytes.IndexByte(body, 0)
-        s := string(body[:n])
-        bodyString := strings.ToLower(s)
-		if err != nil {
+        ctx.Infof("email body: %s", body)
+
+        if err != nil{
 			log.Fatal(err)
 		}
-		fmt.Printf("%s", body)
+        
 
+        s := string(body)
+        bodyString := strings.ToLower(s)
 
 		//TODO:  Buggy Logic, test when working!
         if yes.MatchString(bodyString) == true {
@@ -106,11 +100,11 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
         	hosts = append(hosts, currentHost)  //Think slices are by reference??
         	g.Next = hosts[0]
         	g.save(ctx)
-        	fmt.Printf("Match Yes")
+        	ctx.Infof("Match Yes")
 	    } else if skip.MatchString(bodyString) == true {
 	    	//Respond with the current turn order for next week
 	    	sendSkipMessage(g, r)
-	        fmt.Printf("Match Skip")
+	        ctx.Infof("Match Skip")
 	    } else if no.MatchString(bodyString) == true {
 	    	//Send an email to the next in line
 	    	hosts := g.Hosts
@@ -123,7 +117,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 
 	    	g.save(ctx)
 	    	sendReminder(g, r)
-	    	fmt.Printf("Match No")
+	    	ctx.Infof("Match No")
 	    } else {
 	    	ctx.Infof("Could not find yes/no/skip")
 	    }
