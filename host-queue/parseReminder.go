@@ -75,11 +75,8 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 		}
 
 
-        //Look for Yes/No/Skip
-        yes, err := regexp.Compile(`yes`)
-        no, err := regexp.Compile(`no`)
-        skip, err := regexp.Compile(`skip`)
 
+        responseRegex := regexp.MustCompile(`(yes\b|no\b|skip\b)(.*?)`)
         body, err := ioutil.ReadAll(m.Body)
         ctx.Infof("email body: %s", body)
 
@@ -92,9 +89,9 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
         bodyString := strings.ToLower(s)
         bodyString = strings.Split(bodyString, "it is your turn to host!")[0]
 
-		//TODO:  Buggy Logic, test when working!
-        if yes.MatchString(bodyString) == true {
-        	// Update the order in the group
+		switch responseRegex.FindString(bodyString) {
+		case "yes":
+			// Update the order in the group
         	hosts := g.Hosts
         	currentHost := hosts[0]
         	hosts = hosts[1:]
@@ -102,12 +99,8 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
         	g.Next = hosts[0]
         	g.save(ctx)
         	ctx.Infof("Match Yes")
-	    } else if skip.MatchString(bodyString) == true {
-	    	//Respond with the current turn order for next week
-	    	sendSkipMessage(g, r)
-	        ctx.Infof("Match Skip")
-	    } else if no.MatchString(bodyString) == true {
-	    	//Send an email to the next in line
+		case "no":
+			//Send an email to the next in line
 	    	hosts := g.Hosts
 	    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return strings.Contains(hosts[i].Emails, from) }) 
 	    	if(currentIndex < (len(hosts) - 1)) {
@@ -119,9 +112,13 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 	    	g.save(ctx)
 	    	sendReminder(g, r)
 	    	ctx.Infof("Match No")
-	    } else {
-	    	ctx.Infof("Could not find yes/no/skip")
-	    }
+		case "skip":
+			//Respond with the current turn order for next week
+	    	sendSkipMessage(g, r)
+	        ctx.Infof("Match Skip")
+		default:
+			 ctx.Infof("Could not find yes/no/skip")
+		}
 }
 
 //http://stackoverflow.com/questions/10485743/contains-method-for-a-slice
