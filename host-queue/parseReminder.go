@@ -90,6 +90,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 
         s := string(body)
         bodyString := strings.ToLower(s)
+        bodyString = strings.Split(bodyString, "it is your turn to host!")[0]
 
 		//TODO:  Buggy Logic, test when working!
         if yes.MatchString(bodyString) == true {
