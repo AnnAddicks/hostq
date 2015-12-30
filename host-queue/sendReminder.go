@@ -33,7 +33,7 @@ func sendReminder(group Group, r *http.Request) {
         message.AddTo(email)
         subject := hostName + " it is your turn to host"
         message.SetSubject(subject)
-        message.SetHTML(hostName + hostMessage )
+        message.SetHTML(hostName + hostMessage)
         message.SetFrom(from)
         sg.Send(message)
         
@@ -55,7 +55,6 @@ func sendSkipMessage(group Group, r *http.Request) {
         for _, element := range group.Hosts {
                 buffer.WriteString(element.HostName)
         }
-        c.Infof("buffer: %s", buffer.String())
 
         hosts := make([]string, len(group.Hosts))
         for i, element := range group.Hosts {
