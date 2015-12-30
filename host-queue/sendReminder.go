@@ -13,15 +13,6 @@ import (
         "github.com/sendgrid/sendgrid-go"
 )
 
-//const emailUserName := datastore.NewQuery("emailUserName")
-//const emailPassword := datastore.NewQuery("emailPassword")
-
-/*func getEmailCreds(c appengine.Context) (emailUserName string, emailPassword string) {
-        emailUserNameQuery := datastore.NewQuery("emailUserName")
-        emailPasswordQuery := datastore.NewQuery("emailPassword")
-
-}*/
-
 func sendReminder(group Group, r *http.Request) {
         c := appengine.NewContext(r)
 
