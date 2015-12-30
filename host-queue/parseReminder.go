@@ -28,8 +28,6 @@ func init() {
 }
 
 func IncomingMail(w http.ResponseWriter, r *http.Request) {
-        //Sample from https://cloud.google.com/appengine/docs/go/mail/
-       
         ctx := appengine.NewContext(r)
         defer r.Body.Close()
 
