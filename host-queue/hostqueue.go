@@ -27,10 +27,10 @@ type Group struct {
 
 
 
-// Add creates a new quote given the fields in AddRequest, stores it in the
+// Add creates a new group, stores it in the
 // datastore, and returns it.
 func  Add(w http.ResponseWriter, r *http.Request)  {
-  // We set the same parent key on every Quote entity to ensure each Quote
+  // We set the same parent key on every Group entity to ensure each Group
   // is in the same entity group. Queries across the single entity group
   // will be consistent.
   if r.Method == "POST" {
@@ -62,18 +62,8 @@ func  Add(w http.ResponseWriter, r *http.Request)  {
   }
 }
 
-//Datastore methods from:  http://stevenlu.com/posts/2015/03/23/google-datastore-with-golang/
+
 func (group *Group) key(c appengine.Context) *datastore.Key {
-  // if there is no Id, we want to generate an "incomplete"
-  // one and let datastore determine the key/Id for us
-  //if group.Id == 0 {
-  //  return datastore.NewIncompleteKey(c, "Group", nil)
-  //}
-
-  // if Id is already set, we'll just build the Key based
-  // on the one provided.
-  //return datastore.NewKey(c, "Group", "", group.Id, nil)
-
   return datastore.NewKey(c, "Group", "default_group", 0, nil)
 }
 
@@ -128,7 +118,7 @@ func init() {
    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request)  {
       w.Write([]byte("hostq")) 
    })
-                             
+
    http.HandleFunc("/_ah/mail/reminder@hostqueue-1146.appspotmail.com", IncomingMail)
    http.HandleFunc("/group/add", Add)
    http.HandleFunc("/group/action/email", SendEmail)
