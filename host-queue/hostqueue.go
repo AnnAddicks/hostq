@@ -22,7 +22,7 @@ type Group struct {
     GroupName string `json:"groupName"`
     GroupEmail string `json:"groupEmail"`
     Hosts []Host `json:"hosts"`
-    Next Host `json:"next"`
+    Next int `json:"next"`
 }
 
 

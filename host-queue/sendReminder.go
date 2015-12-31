@@ -24,7 +24,7 @@ func sendReminder(group Group, r *http.Request) {
         sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
         sg.Client = urlfetch.Client(c)
         email := group.GroupEmail
-        hostName := group.Next.HostName
+        hostName := group.Hosts[group.Next].HostName
         c.Infof("Email: %v", email)
         c.Infof("Host Name: %v", hostName)
         

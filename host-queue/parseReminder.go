@@ -41,7 +41,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 		//clean up responses formatted with a name first.  Ex: 'Ann Addicks <test@test.com>'
 		from = strings.Split(from, "<")[1]
 		from = strings.Split(from, ">")[0]
-
+		ctx.Infof("from : " + from)
 		g, err := findGroup(ctx, from)
 		if err != nil {
 			log.Fatal(err)
@@ -66,8 +66,6 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 	        	
 	        	hosts = hosts[1:]
 	        	hosts = append(hosts, currentHost)
-	        	
-	        	g.Next = hosts[0]
 	        	g.Hosts = hosts
 	        	
 	        	g.save(ctx)
@@ -75,11 +73,11 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			case "no":
 				//Send an email to the next in line
 		    	hosts := g.Hosts
-		    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return strings.Contains(hosts[i].Emails, from) }) 
-		    	if(currentIndex < (len(hosts) - 1)) {
-		    		g.Next = hosts[currentIndex + 1]
+		    	
+		    	if(g.Next < (len(hosts) - 1)) {
+		    		g.Next++
 		    	} else {
-		    		g.Next = hosts[0]
+		    		g.Next = 0
 		    	}
 
 		    	g.save(ctx)
@@ -92,6 +90,8 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			default:
 				 ctx.Infof("Could not find yes/no/skip")
 			}
+		} else {
+			ctx.Infof("Sender is not valid")
 		}
 }
 
@@ -116,7 +116,8 @@ func findGroup(ctx appengine.Context, from string) (Group, error) {
 
 //Check if they should be responding or if someone is being snarky. 
 func isValidResponder(from string, g Group) bool {
-	return strings.Contains(g.Next.Emails, from)
+	validEmails := g.Hosts[g.Next].Emails
+	return strings.Contains(validEmails, from)
 }
 
 //http://stackoverflow.com/questions/10485743/contains-method-for-a-slice
@@ -128,14 +129,4 @@ func contains(slice []string, item string) bool {
 
     _, ok := set[item] 
     return ok
-}
-
-//http://stackoverflow.com/questions/8307478/go-how-to-find-out-element-position-in-slice
-func SliceIndex(limit int, predicate func(i int) bool) int {
-    for i := 0; i < limit; i++ {
-        if predicate(i) {
-            return i
-        }
-    }
-    return -1
 }
