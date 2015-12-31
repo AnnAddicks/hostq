@@ -24,10 +24,6 @@ import (
     "strings"
 )
 
-func init() {
-        
-}
-
 func IncomingMail(w http.ResponseWriter, r *http.Request) {
         ctx := appengine.NewContext(r)
         defer r.Body.Close()
