@@ -15,6 +15,7 @@ package hostqueue
 
 import (
 	"appengine"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/mail"
@@ -31,92 +32,91 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
         ctx := appengine.NewContext(r)
         defer r.Body.Close()
 
-        //Get Sender - is it one of the registered senders in queue and are they the hosting group?
         m, err := mail.ReadMessage(r.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		
 		from := m.Header.Get("From")
+		//clean up responses formatted with a name first.  Ex: 'Ann Addicks <test@test.com>'
 		from = strings.Split(from, "<")[1]
 		from = strings.Split(from, ">")[0]
-		ctx.Infof("Email replied from: %s", from)
-		
-		//***** Check if they should be responding or if someone is being snarky. ************
-		groups, err := GetGroups(ctx)
+
+		g, err := findGroup(ctx, from)
 		if err != nil {
 			log.Fatal(err)
-		}
+		} else if isValidResponder(from, g) {
+			responseRegex := regexp.MustCompile(`(yes\b|no\b|skip\b)(.*?)`)
+	        body, err := ioutil.ReadAll(m.Body)
 
-		var g Group
-		for _, group := range groups {
-			for _, host := range group.Hosts {
-				if strings.Contains(host.Emails, from) {
-					g = group
-					break;
-				}
-				if g.GroupName != "" {  // cannot use (Group{}) because of []Hosts for some reason
-					break;
-				}
-				continue
-
+	        if err != nil{
+				log.Fatal(err)
 			}
-			if g.GroupName != "" {
-				break;
+	        
+	        s := string(body)
+	        bodyString := strings.ToLower(s)
+	        bodyString = strings.Split(bodyString, "it is your turn to host!")[0]
+
+			switch responseRegex.FindString(bodyString) {
+			case "yes":
+				// Update the order in the group
+	        	hosts := g.Hosts
+	        	currentHost := hosts[0]
+	        	currentHost.TimesHosted++
+	        	
+	        	hosts = hosts[1:]
+	        	hosts = append(hosts, currentHost)
+	        	
+	        	g.Next = hosts[0]
+	        	g.Hosts = hosts
+	        	
+	        	g.save(ctx)
+	        	ctx.Infof("Match Yes")
+			case "no":
+				//Send an email to the next in line
+		    	hosts := g.Hosts
+		    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return strings.Contains(hosts[i].Emails, from) }) 
+		    	if(currentIndex < (len(hosts) - 1)) {
+		    		g.Next = hosts[currentIndex + 1]
+		    	} else {
+		    		g.Next = hosts[0]
+		    	}
+
+		    	g.save(ctx)
+		    	sendReminder(g, r)
+		    	ctx.Infof("Match No")
+			case "skip":
+				//Respond with the current turn order for next week
+		    	sendSkipMessage(g, r)
+		        ctx.Infof("Match Skip")
+			default:
+				 ctx.Infof("Could not find yes/no/skip")
 			}
-			continue
 		}
+}
 
-		if !strings.Contains(g.Next.Emails, from) {
-			log.Fatal("Sent from the wrong person!\n  Sent from: %s, but expected: %s", from, g.Hosts[0].Emails)
+/*Pull all the groups and loop through to find the email address.  
+  I need to learn more about querying app engines datastore to make this nicer.*/
+func findGroup(ctx appengine.Context, from string) (Group, error) { 
+	groups, err := GetGroups(ctx)
+	var g Group
+	if err != nil {
+		return g, err
+	}
+
+	for _, group := range groups {
+		for _, host := range group.Hosts {
+			if strings.Contains(host.Emails, from) {
+				return group, nil
+			}
 		}
+	}
+	return g, fmt.Errorf("Cannot find a group for: %s", from)
+}
 
-
-
-        responseRegex := regexp.MustCompile(`(yes\b|no\b|skip\b)(.*?)`)
-        body, err := ioutil.ReadAll(m.Body)
-        ctx.Infof("email body: %s", body)
-
-        if err != nil{
-			log.Fatal(err)
-		}
-        
-
-        s := string(body)
-        bodyString := strings.ToLower(s)
-        bodyString = strings.Split(bodyString, "it is your turn to host!")[0]
-
-		switch responseRegex.FindString(bodyString) {
-		case "yes":
-			// Update the order in the group
-        	hosts := g.Hosts
-        	currentHost := hosts[0]
-        	hosts = hosts[1:]
-        	hosts = append(hosts, currentHost)  //Think slices are by reference??
-        	g.Next = hosts[0]
-        	g.save(ctx)
-        	ctx.Infof("Match Yes")
-		case "no":
-			//Send an email to the next in line
-	    	hosts := g.Hosts
-	    	currentIndex := SliceIndex(len(hosts), func(i int) bool { return strings.Contains(hosts[i].Emails, from) }) 
-	    	if(currentIndex < (len(hosts) - 1)) {
-	    		g.Next = hosts[currentIndex + 1]
-	    	} else {
-	    		g.Next = hosts[0]
-	    	}
-
-	    	g.save(ctx)
-	    	sendReminder(g, r)
-	    	ctx.Infof("Match No")
-		case "skip":
-			//Respond with the current turn order for next week
-	    	sendSkipMessage(g, r)
-	        ctx.Infof("Match Skip")
-		default:
-			 ctx.Infof("Could not find yes/no/skip")
-		}
+//Check if they should be responding or if someone is being snarky. 
+func isValidResponder(from string, g Group) bool {
+	return strings.Contains(g.Next.Emails, from)
 }
 
 //http://stackoverflow.com/questions/10485743/contains-method-for-a-slice
