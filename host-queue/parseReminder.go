@@ -57,12 +57,13 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			case "yes":
 				// Update the order in the group
 	        	hosts := g.Hosts
-	        	currentHost := hosts[0]
+	        	currentHost := hosts[g.Next]
 	        	currentHost.TimesHosted++
 	        	
-	        	hosts = hosts[1:]
+	        	hosts = append(hosts[:g.Next], hosts[g.Next+1:]...)
 	        	hosts = append(hosts, currentHost)
 	        	g.Hosts = hosts
+	        	g.Next = 0
 	        	
 	        	g.save(ctx)
 	        	ctx.Infof("Match Yes")
