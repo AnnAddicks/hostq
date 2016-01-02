@@ -7,8 +7,7 @@
 			3a. Yes - update the order in the group
 			3b. No - send an email to the next in line, update group
 			3c. Skip - respond with the current turn order for next week
-	Notes: Super procedural right now.  I need to clean up the code once I have it working! 
-	and wow! look at the use of 3 different logging!
+	Notes: Super procedural right now.  I need to clean up the code 
 
 */
 package hostqueue
@@ -55,7 +54,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 
 			switch responseRegex.FindString(bodyString) {
 			case "yes":
-				// Update the order in the group
+				// Update the order in the group by deleting the current host and appending them to the end.
 	        	hosts := g.Hosts
 	        	currentHost := hosts[g.Next]
 	        	currentHost.TimesHosted++
@@ -68,7 +67,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 	        	g.save(ctx)
 	        	ctx.Infof("Match Yes")
 			case "no":
-				//Send an email to the next in line
+				//Send an email to the next in line && update the group
 		    	hosts := g.Hosts
 		    	
 		    	if(g.Next < (len(hosts) - 1)) {
