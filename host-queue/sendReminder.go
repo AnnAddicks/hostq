@@ -31,8 +31,7 @@ func sendReminder(group Group, r *http.Request) {
 
         message := sendgrid.NewMail()
         message.AddTo(email)
-        subject := hostName + " it is your turn to host"
-        message.SetSubject(subject)
+        message.SetSubject("This weeks hosting reminder")
         message.SetHTML(hostName + hostMessage)
         message.SetFrom(from)
         sg.Send(message)
