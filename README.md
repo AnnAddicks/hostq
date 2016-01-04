@@ -43,5 +43,6 @@ Project to determine who is hosting our weekly dinner group.
  * Make a single responder that gives the current order to whoever emails with "status" or similar.  (After talking with Josh, this could also be a static api link.)
  * Make it remember the current menu. This particular idea isn't fully baked, admittedly.
  * Possibly include queue order on every email.
+ * One more thing you might add is actual dates - it doesn't have to be anything fancy, just know that the order is family a, b, c, and the dates of the next three saturdays, etc.
 
 
