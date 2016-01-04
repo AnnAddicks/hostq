@@ -24,3 +24,24 @@ Project to determine who is hosting our weekly dinner group.
   * November is when you are least likely to host
   * Congratulations on 50 hosted events
 
+## Code Review Suggestions (my thoughts in parens)
+* (OMG!) more error checking
+* Check out Go's timers (Can I use timers on app engine?)
+* Decouple Hosts & Group
+* Api Links to accept hosting.  (If we do this, then probably do not send the the group email, but to an individual)
+* Make the hosting rotation cusomizeable.  (Our group rotates a queue so this will revisited once our needs are met)
+ *  Exclude hosts which have chosen to be excluded (by web interface, perhaps, or a vacation email).
+ * Order the remaining hosts by the number of times they have hosted.
+ * If there exists a tie, select the host who last hosted longest ago.
+ * If there exists a tie, choose based on stored slice order or random.
+ * Send a notification and remove the host from the queue.
+ * If the notification is rejected or times out, select the next remaining host and repeat 5.
+ * If the hosts are exhausted, announce that the dinner has been canceled.
+
+## Requests from dining in group
+ * Mine:  Ack back when someone responds with 'yes'. 
+ * Make a single responder that gives the current order to whoever emails with "status" or similar.  (After talking with Josh, this could also be a static api link.)
+ * Make it remember the current menu. This particular idea isn't fully baked, admittedly.
+ * Possibly include queue order on every email.
+
+
