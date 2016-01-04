@@ -1,100 +1,104 @@
 package hostqueue
 
 import (
-        "bytes"
-        "fmt"
-        "net/http"
-        "strings"
+	"bytes"
+	"fmt"
+	"net/http"
+	"strings"
 
-        "appengine"
-        "appengine/urlfetch"
-        "appengine/datastore"
+	"appengine"
+	"appengine/datastore"
+	"appengine/urlfetch"
 
-        "github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go"
 )
 
 func sendReminder(group Group, r *http.Request) {
-        c := appengine.NewContext(r)
+	c := appengine.NewContext(r)
 
-        creds, err := GetCreds(c)
-        if err != nil { 
-          panic(err)
+	creds, err := GetCreds(c)
+	if err != nil {
+		panic(err)
+	}
+
+	sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
+	sg.Client = urlfetch.Client(c)
+	email := group.GroupEmail
+	hostName := group.Hosts[group.Next].HostName
+	c.Infof("Email: %v", email)
+	c.Infof("Host Name: %v", hostName)
+
+	message := sendgrid.NewMail()
+	message.AddTo(email)
+	message.SetSubject("This weeks hosting reminder")
+	message.SetHTML(hostName + hostMessage)
+	message.SetFrom(from)
+	
+        err = sg.Send(message)
+
+        if(err != nil) {
+                panic(err)
         }
-
-        sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
-        sg.Client = urlfetch.Client(c)
-        email := group.GroupEmail
-        hostName := group.Hosts[group.Next].HostName
-        c.Infof("Email: %v", email)
-        c.Infof("Host Name: %v", hostName)
-        
-
-        message := sendgrid.NewMail()
-        message.AddTo(email)
-        message.SetSubject("This weeks hosting reminder")
-        message.SetHTML(hostName + hostMessage)
-        message.SetFrom(from)
-        sg.Send(message)
-        
 
 }
 
 func sendSkipMessage(group Group, r *http.Request) {
-        c := appengine.NewContext(r)
+	c := appengine.NewContext(r)
 
-        creds, err := GetCreds(c)
-        if err != nil { 
-          panic(err)
-        }
+	creds, err := GetCreds(c)
+	if err != nil {
+		panic(err)
+	}
 
-        sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
-        sg.Client = urlfetch.Client(c)
-        email := group.GroupEmail
-        var buffer bytes.Buffer
-        for _, element := range group.Hosts {
-                buffer.WriteString(element.HostName)
-        }
+	sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
+	sg.Client = urlfetch.Client(c)
+	email := group.GroupEmail
+	var buffer bytes.Buffer
+	for _, element := range group.Hosts {
+		buffer.WriteString(element.HostName)
+	}
 
-        hosts := make([]string, len(group.Hosts))
-        for i, element := range group.Hosts {
-                hosts[i] = element.HostName
+	hosts := make([]string, len(group.Hosts))
+	for i, element := range group.Hosts {
+		hosts[i] = element.HostName
+	}
+	c.Infof("hosts: %s", strings.Join(hosts[:], ","))
+	c.Infof("Email: %v", email)
+
+	message := sendgrid.NewMail()
+	message.AddTo(email)
+	message.SetSubject("See you next week")
+	message.SetHTML(fmt.Sprintf(skipMessage, strings.Join(hosts[:], ", ")))
+	message.SetFrom(from)
+	
+        err = sg.Send(message)
+        if(err != nil) {
+                panic(err)
         }
-        c.Infof("hosts: %s", strings.Join(hosts[:],","))
-        c.Infof("Email: %v", email)
-        
-        message := sendgrid.NewMail()
-        message.AddTo(email)
-        message.SetSubject("See you next week")
-        message.SetHTML(fmt.Sprintf(skipMessage, strings.Join(hosts[:],", ")))
-        message.SetFrom(from)
-        sg.Send(message)
 }
 
 /*App engine allows for environment variables, but they are stored in app.yaml
 and I don't want my mail creds pushed to a public repo.  */
 type EmailCreds struct {
-        Username string `json:"username"`
-        Pass string `json:"password"`
+	Username string `json:"username"`
+	Pass     string `json:"password"`
 }
 
 func GetCreds(ctx appengine.Context) (EmailCreds, error) {
-  //q := datastore.NewQuery("EmailCreds")
-  k := datastore.NewKey(ctx, "EmailCreds", "singleton_creds", 0, nil)
-  var ec EmailCreds
-  err := datastore.Get(ctx, k, &ec)
-  if err != nil {
-    return EmailCreds{}, err
-  }
+	//q := datastore.NewQuery("EmailCreds")
+	k := datastore.NewKey(ctx, "EmailCreds", "singleton_creds", 0, nil)
+	var ec EmailCreds
+	err := datastore.Get(ctx, k, &ec)
+	if err != nil {
+		return EmailCreds{}, err
+	}
 
-  return ec, nil
+	return ec, nil
 }
 
 const from = "reminder@hostqueue-1146.appspotmail.com"
 
-const hostMessage = `
-,
-
-It is your turn to host!  
+const hostMessage = ` it is your turn to host!  
 Respond with 'yes' to host, 'no' to go to the next in line to host, or 'skip' for everyone to skip this week and host next week.
 `
 
