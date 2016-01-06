@@ -28,31 +28,13 @@ func sendReminder(group Group, r *http.Request) {
 	c.Infof("Email: %v", email)
 	c.Infof("Host Name: %v", hostName)
 
-	message := sendgrid.NewMail()
-	message.AddTo(email)
-	message.SetSubject("This weeks hosting reminder")
-	message.SetHTML(hostName + hostMessage)
-	message.SetFrom(from)
-
-	err = sg.Send(message)
-
-	if err != nil {
-		c.Infof("Message: %v", message)
-		panic(err)
-	}
-
+	html := hostName + hostMessage
+	sendEmail(email, "This weeks hosting reminder", html, r)
 }
 
 func sendSkipMessage(group Group, r *http.Request) {
 	c := appengine.NewContext(r)
 
-	creds, err := GetCreds(c)
-	if err != nil {
-		panic(err)
-	}
-
-	sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
-	sg.Client = urlfetch.Client(c)
 	email := group.GroupEmail
 	var buffer bytes.Buffer
 	for _, element := range group.Hosts {
@@ -66,20 +48,32 @@ func sendSkipMessage(group Group, r *http.Request) {
 	c.Infof("hosts: %s", strings.Join(hosts[:], ","))
 	c.Infof("Email: %v", email)
 
-	message := sendgrid.NewMail()
-	message.AddTo(email)
-	message.SetSubject("This weeks hosting reminder")
-	message.SetHTML(fmt.Sprintf(skipMessage, strings.Join(hosts[:], ", ")))
-	message.SetFrom(from)
-
-	err = sg.Send(message)
-	if err != nil {
-		c.Infof("Message: %v", message)
-		panic(err)
-	}
+	html := fmt.Sprintf(skipMessage, strings.Join(hosts[:], ", "))
+	sendEmail(email, "See you next week", html, r)
 }
 
 func sendHostConfirmedMessage(group Group, r *http.Request) {
+	c := appengine.NewContext(r)
+
+	email := group.GroupEmail
+	var buffer bytes.Buffer
+	for _, element := range group.Hosts {
+		buffer.WriteString(element.HostName)
+	}
+
+	hosts := make([]string, len(group.Hosts))
+	for i, element := range group.Hosts {
+		hosts[i] = element.HostName
+	}
+	c.Infof("hosts: %s", strings.Join(hosts[:], ","))
+	c.Infof("Email: %v", email)
+
+	html := fmt.Sprintf(confirmedMessage, group.Hosts[len(group.Hosts)-1].HostName, strings.Join(hosts[:], ", "))
+	sendEmail(email, "See you next week", html, r)
+
+}
+
+func sendEmail(email string, subject string, html string, r *http.Request) {
 	c := appengine.NewContext(r)
 
 	creds, err := GetCreds(c)
@@ -89,23 +83,11 @@ func sendHostConfirmedMessage(group Group, r *http.Request) {
 
 	sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
 	sg.Client = urlfetch.Client(c)
-	email := group.GroupEmail
-	var buffer bytes.Buffer
-	for _, element := range group.Hosts {
-		buffer.WriteString(element.HostName)
-	}
-
-	hosts := make([]string, len(group.Hosts))
-	for i, element := range group.Hosts {
-		hosts[i] = element.HostName
-	}
-	c.Infof("hosts: %s", strings.Join(hosts[:], ","))
-	c.Infof("Email: %v", email)
 
 	message := sendgrid.NewMail()
 	message.AddTo(email)
-	message.SetSubject("See you next week")
-	message.SetHTML(fmt.Sprintf(confirmedMessage, group.Hosts[len(group.Hosts)-1].HostName, strings.Join(hosts[:], ", ")))
+	message.SetSubject(subject)
+	message.SetHTML(html)
 	message.SetFrom(from)
 
 	err = sg.Send(message)
