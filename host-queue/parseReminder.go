@@ -65,6 +65,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			g.Next = 0
 
 			g.save(ctx)
+			sendHostConfirmedMessage(g, r)
 			ctx.Infof("Match Yes")
 		case "no":
 			//Send an email to the next in line && update the group
