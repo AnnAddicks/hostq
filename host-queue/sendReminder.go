@@ -92,6 +92,7 @@ func sendEmail(email string, subject string, html string, r *http.Request) {
 
 	err = sg.Send(message)
 	if err != nil {
+		//TODO:  autocreate an issue in github if this is unique in the last month
 		c.Infof("Message: %v", message)
 		panic(err)
 	}
