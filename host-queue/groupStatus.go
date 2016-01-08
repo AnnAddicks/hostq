@@ -19,12 +19,11 @@ func DisplayGroupStatus(w http.ResponseWriter, r *http.Request) {
 	AddUuid(c)
 
 	uuid := pathVars["uuid"]
-	c.Infof("URI", strings.Split(r.URL.Path, "/"))
-	c.Infof("UUID", uuid)
+	c.Infof("UUID: %s", uuid)
 
 	if isValidUUID((uuid)) {
 		group, err := GetGroupByUUID(c, uuid)
-
+		c.Infof("group: %v", group)
 		if err != nil {
 			//c.Infof()
 			w.Write([]byte("invalid group"))
