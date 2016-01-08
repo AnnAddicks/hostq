@@ -28,8 +28,9 @@ func sendReminder(group Group, r *http.Request) {
 	c.Infof("Email: %v", email)
 	c.Infof("Host Name: %v", hostName)
 
+	subject := "This weeks hosting reminder for " + group.GroupName
 	html := hostName + hostMessage
-	sendEmail(email, "This weeks hosting reminder", html, r)
+	sendEmail(email, subject, html, r)
 }
 
 func sendSkipMessage(group Group, r *http.Request) {
