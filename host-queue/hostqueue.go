@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type Host struct {
@@ -17,6 +19,7 @@ type Host struct {
 
 type Group struct {
 	Id         int64  `json: "id" datastore:"-"`
+	UUID       string `json: "uuid"`
 	GroupName  string `json:"groupName"`
 	GroupEmail string `json:"groupEmail"`
 	Hosts      []Host `json:"hosts"`
@@ -91,6 +94,30 @@ func GetGroups(ctx appengine.Context) ([]Group, error) {
 	return groups, nil
 }
 
+func GetGroupByUUID(ctx appengine.Context, uuid string) (Group, error) {
+	q := datastore.NewQuery("Group").Filter("UUID =", uuid).Limit(1)
+
+	var groups []Group
+	var group Group
+	if _, err := q.GetAll(ctx, &group); err != nil {
+		return group, err
+	}
+
+	return groups[0], nil
+}
+
+func AddUuid(ctx appengine.Context) {
+	uuid := "a2b57006-7df8-444a-842a-dd366cd228bd"
+
+	groups, _ := GetGroups(ctx)
+
+	for _, group := range groups {
+		group.UUID = uuid
+		group.save(ctx)
+	}
+
+}
+
 func SendEmail(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -107,11 +134,15 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func init() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r := mux.NewRouter()
+	r.HandleFunc("/_ah/mail/reminder@hostqueue-1146.appspotmail.com", IncomingMail)
+	r.HandleFunc("/group/status/{uuid}", DisplayGroupStatus)
+	r.HandleFunc("/group/add", Add)
+	r.HandleFunc("/group/action/email", SendEmail)
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("hostq"))
 	})
 
-	http.HandleFunc("/_ah/mail/reminder@hostqueue-1146.appspotmail.com", IncomingMail)
-	http.HandleFunc("/group/add", Add)
-	http.HandleFunc("/group/action/email", SendEmail)
+	http.Handle("/", r)
 }
