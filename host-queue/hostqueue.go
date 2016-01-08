@@ -99,23 +99,11 @@ func GetGroupByUUID(ctx appengine.Context, uuid string) (Group, error) {
 
 	var groups []Group
 	var group Group
-	if _, err := q.GetAll(ctx, &group); err != nil {
+	if _, err := q.GetAll(ctx, &groups); err != nil {
 		return group, err
 	}
 
 	return groups[0], nil
-}
-
-func AddUuid(ctx appengine.Context) {
-	uuid := "a2b57006-7df8-444a-842a-dd366cd228bd"
-
-	groups, _ := GetGroups(ctx)
-
-	for _, group := range groups {
-		group.UUID = uuid
-		group.save(ctx)
-	}
-
 }
 
 func SendEmail(w http.ResponseWriter, r *http.Request) {

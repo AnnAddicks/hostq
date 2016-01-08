@@ -63,6 +63,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			hosts = append(hosts, currentHost)
 			g.Hosts = hosts
 			g.Next = 0
+			//hosts.LastHosted when do I set this?  I need another field on group as to when this happens.
 
 			g.save(ctx)
 			sendHostConfirmedMessage(g, r)
