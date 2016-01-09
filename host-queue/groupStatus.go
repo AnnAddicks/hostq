@@ -1,7 +1,7 @@
 package hostqueue
 
 import (
-	"encoding/json"
+	"html/template"
 	"net/http"
 	"regexp"
 
@@ -16,29 +16,32 @@ type Status struct {
 	Next  int    `json:"next"`
 }
 
-//group/status/{groupUUID}
-//Respond with the group name, current queue, who is up next in that queue, and if this week has a host yet.
+/* group/status/{groupUUID}
+   Respond with the group name, current queue, who is up next in that queue, and if this week has a host yet.
+   I'm not sure what this app is going to be yet, api with spa? or server & client code
+*/
 func DisplayGroupStatus(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
+	ctx := appengine.NewContext(r)
 	pathVars := mux.Vars(r)
 
 	uuid := pathVars["uuid"]
-	c.Infof("UUID: %s", uuid)
+	ctx.Infof("UUID: %s", uuid)
 
 	if isValidUUID((uuid)) {
-		group, err := GetGroupByUUID(c, uuid)
-		c.Infof("group: %v", group)
+		group, err := GetGroupByUUID(ctx, uuid)
+		ctx.Infof("group: %v", group)
 		if err != nil {
 			panic(err)
 		}
 
 		status := convertToStatus(group)
-		jsonStatus, err := json.Marshal(status)
-		if err != nil {
-			panic(err)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		var tpl = template.Must(template.ParseGlob("templates/*.html"))
+		if err := tpl.ExecuteTemplate(w, "index.html", status); err != nil {
+			ctx.Infof("%v", err)
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(jsonStatus)
+
 	} else {
 		w.Write([]byte("Invalid group"))
 	}

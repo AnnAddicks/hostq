@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <title> HostQ </title>
+    <!-- <link rel="stylesheet" href="/static/???.css"/> -->
+  </head>
+
+  <body>
+  	<h1>{{.Name}} Group Status</h1>
+  	{{range .Hosts}}
+  	    {{if index eq .Next}}
+  	      <b>
+  	    {{end}}
+  		{{.HostName}} <br/>
+  		{{if index eq .Next}}
+  	      </b>
+  	    {{end}}
+  	{{end}}
+  </body>
+ </html>
