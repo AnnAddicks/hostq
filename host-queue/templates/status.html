@@ -9,14 +9,23 @@
 
   <body>
   	<h1>{{.Name}} Group Status</h1>
-  	{{range .Hosts}}
-  	    {{if index eq .Next}}
-  	      <b>
-  	    {{end}}
-  		{{.HostName}} <br/>
-  		{{if index eq .Next}}
-  	      </b>
-  	    {{end}}
-  	{{end}}
+  	The current group order is:  
+
+    <ul>
+      {{range $index, $host := .Hosts}}
+        <li>
+          {{if eq $.Next $index }} 
+           <b>
+          {{end}} 
+      		
+          {{$host.HostName}} <br/>
+          {{if eq $.Next $index }} 
+           </b>
+          {{end}} 
+        </li>
+    	{{end}}
+    </ul>
+
+    The bolded group is the next potential host.  
   </body>
  </html>

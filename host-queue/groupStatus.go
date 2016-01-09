@@ -38,7 +38,7 @@ func DisplayGroupStatus(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 		var tpl = template.Must(template.ParseGlob("templates/*.html"))
-		if err := tpl.ExecuteTemplate(w, "index.html", status); err != nil {
+		if err := tpl.ExecuteTemplate(w, "status.html", status); err != nil {
 			ctx.Infof("%v", err)
 		}
 
