@@ -121,8 +121,15 @@ const from = "reminder@hostqueue-1146.appspotmail.com"
 
 const hostMessage = ` it is your turn to host!  
 Respond with 'yes' to host, 'no' to go to the next in line to host, or 'skip' for everyone to skip this week and host next week.
+
+To get the live rotation status go here:  http://hostqueue-1146.appspot.com/group/status/a2b57006-7df8-444a-842a-dd366cd228bd
 `
 
-const skipMessage = `See you next week with the following turn order:  %s`
+const skipMessage = `See you next week with the following turn order:  %s
+To get the live rotation status go here:  http://hostqueue-1146.appspot.com/group/status/a2b57006-7df8-444a-842a-dd366cd228bd
+`
 
-const confirmedMessage = `The %s has agreed to host this week.  The rotation for next week will be: %s`
+const confirmedMessage = `The %s has agreed to host this week.  The rotation for next week will be: %s  
+
+To get the live rotation status go here:  http://hostqueue-1146.appspot.com/group/status/a2b57006-7df8-444a-842a-dd366cd228bd
+`
