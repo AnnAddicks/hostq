@@ -13,6 +13,7 @@ Project to determine who is hosting our weekly dinner group.
 
 
 ## Future Goals
+ * Prevent the next in queue to repond early.  Example:  It is family A's turn to host this week, they respond with yes.  Family B knows thier turn is next week and respond with yes.  This will cause the next weeks email to be sent as Family C's turn.
  * Group defined cron schedule
  * Group Customizations
   * Can/Should anyone in the group be able to reply for skip
