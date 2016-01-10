@@ -44,5 +44,5 @@ Project to determine who is hosting our weekly dinner group.
 - [ ] Make it remember the current menu. This particular idea isn't fully baked, admittedly.
 - [ ] Possibly include queue order on every email.
 - [ ] One more thing you might add is actual dates - it doesn't have to be anything fancy, just know that the order is family a, b, c, and the dates of the next three saturdays, etc.
-
+- [ ] Add a link or response to say who will be there so the host could dish out assignments.  (Pun intended!)
 
