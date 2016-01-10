@@ -25,11 +25,11 @@ Project to determine who is hosting our weekly dinner group.
   * Congratulations on 50 hosted events
 
 ## Code Review Suggestions (my thoughts in parens)
-* (OMG!) more error checking
-* Check out Go's timers (Can I use timers on app engine?)
-* Decouple Hosts & Group
-* Api Links to accept hosting.  (If we do this, then probably do not send the the group email, but to an individual)
-* Make the hosting rotation cusomizeable.  (Our group rotates a queue so this will revisited once our needs are met)
+- [ ] (OMG!) more error checking
+- [ ] Check out Go's timers (Can I use timers on app engine?)
+- [ ] Decouple Hosts & Group
+- [ ] Api Links to accept hosting.  (If we do this, then probably do not send the the group email, but to an individual)
+- [ ] Make the hosting rotation customizable.  (Our group rotates a queue so this will revisited once our needs are met)
  *  Exclude hosts which have chosen to be excluded (by web interface, perhaps, or a vacation email).
  * Order the remaining hosts by the number of times they have hosted.
  * If there exists a tie, select the host who last hosted longest ago.
@@ -39,10 +39,10 @@ Project to determine who is hosting our weekly dinner group.
  * If the hosts are exhausted, announce that the dinner has been canceled.
 
 ## Requests from dining in group
- * Mine:  Ack back when someone responds with 'yes'. 
- * Make a single responder that gives the current order to whoever emails with "status" or similar.  (After talking with Josh, this could also be a static api link.)
- * Make it remember the current menu. This particular idea isn't fully baked, admittedly.
- * Possibly include queue order on every email.
- * One more thing you might add is actual dates - it doesn't have to be anything fancy, just know that the order is family a, b, c, and the dates of the next three saturdays, etc.
+- [x] Mine:  Ack back when someone responds with 'yes'. 
+- [x] Make a single responder that gives the current order to whoever emails with "status" or similar.  (After talking with Josh, this could also be a static api link.)
+- [ ] Make it remember the current menu. This particular idea isn't fully baked, admittedly.
+- [ ] Possibly include queue order on every email.
+- [ ] One more thing you might add is actual dates - it doesn't have to be anything fancy, just know that the order is family a, b, c, and the dates of the next three saturdays, etc.
 
 
