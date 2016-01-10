@@ -25,7 +25,7 @@ Project to determine who is hosting our weekly dinner group.
   * Congratulations on 50 hosted events
 
 ## Code Review Suggestions (my thoughts in parens)
-- [ ](OMG!) more error checking
+- [ ] more error checking (OMG!  the error checking in GO is crazy!)
 - [ ] Check out Go's timers (Can I use timers on app engine?)
 - [ ] Decouple Hosts & Group
 - [ ] Api Links to accept hosting.  (If we do this, then probably do not send the the group email, but to an individual)
