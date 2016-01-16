@@ -117,14 +117,3 @@ func isValidResponder(from string, g Group) bool {
 	validEmails := g.Hosts[g.Next].Emails
 	return strings.Contains(validEmails, from)
 }
-
-//http://stackoverflow.com/questions/10485743/contains-method-for-a-slice
-func contains(slice []string, item string) bool {
-	set := make(map[string]struct{}, len(slice))
-	for _, s := range slice {
-		set[s] = struct{}{}
-	}
-
-	_, ok := set[item]
-	return ok
-}
