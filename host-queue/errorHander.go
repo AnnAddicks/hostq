@@ -1,3 +1,9 @@
+/* Auto Create Github issues on crashes.
+ Sample curl to create an issue:
+curl --user "caspyin" -X POST --data
+  '{"description":"Created via API","public":"true","files":{"file1.txt":{"content":"Demo"}}'
+  https://api.github.com/gists
+*/
 package hostqueue
 
 import (
@@ -8,12 +14,6 @@ import (
 	"fmt"
 	"net/http"
 )
-
-/* Sample curl to create an issue:
-curl --user "caspyin" -X POST --data
-  '{"description":"Created via API","public":"true","files":{"file1.txt":{"content":"Demo"}}'
-  https://api.github.com/gists
-*/
 
 const githubURI = "https://api.github.com/repos/AnnAddicks/hostq/issues"
 
@@ -28,20 +28,10 @@ type GithubCreds struct {
 	Password string `json:"username"`
 }
 
-func (creds *GithubCreds) key(c appengine.Context) *datastore.Key {
-	k := datastore.NewKey(c, "GithubCreds", "default", 0, nil)
-	return datastore.NewIncompleteKey(c, "GithubCreds", k)
-}
-
-func (creds *GithubCreds) save(c appengine.Context) (*GithubCreds, error) {
-	_, err := datastore.Put(c, creds.key(c), creds)
-	if err != nil {
-		return nil, err
-	}
-
-	return creds, nil
-}
-
+/*
+	Storing creds in the datastore because app engine puts environment
+	variables in app.yaml.  TODO: Cache these
+*/
 func GetGithubCreds(ctx appengine.Context) (GithubCreds, error) {
 	q := datastore.NewQuery("GithubCreds").Limit(1)
 
@@ -55,6 +45,9 @@ func GetGithubCreds(ctx appengine.Context) (GithubCreds, error) {
 }
 
 func CreateGithubIssueAndPanic(originalErr error, r *http.Request) {
+	/* TODO check the datastore first if the error has happened in the last
+	30 or so days */
+
 	var issue Issue
 	issue.Title = "Auto Created issue"
 	issue.Body = fmt.Sprintf("%v", originalErr)
