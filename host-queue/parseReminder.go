@@ -29,7 +29,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 
 	m, err := mail.ReadMessage(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		CreateGithubIssueAndPanic(err, r)
 	}
 
 	from := m.Header.Get("From")
@@ -45,7 +45,7 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(m.Body)
 
 		if err != nil {
-			log.Fatal(err)
+			CreateGithubIssueAndPanic(err, r)
 		}
 
 		s := string(body)

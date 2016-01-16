@@ -38,20 +38,19 @@ func Add(w http.ResponseWriter, r *http.Request) {
 
 		err := json.NewDecoder(r.Body).Decode(&group)
 		if err != nil {
-			panic(err)
+			CreateGithubIssueAndPanic(err, r)
 		}
 		k := group.key(ctx)
 
 		//TODO: Oh my, trusing input from a user!!
 		k, err = datastore.Put(ctx, k, group)
 		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			panic(err)
+			CreateGithubIssueAndPanic(err, r)
 		}
 		group.Id = k.IntID()
 		g, err := json.Marshal(group)
 		if err != nil {
-			panic(err)
+			CreateGithubIssueAndPanic(err, r)
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(g)
@@ -108,11 +107,10 @@ func GetGroupByUUID(ctx appengine.Context, uuid string) (Group, error) {
 
 func SendEmail(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	g, err := GetGroups(ctx)
 
+	g, err := GetGroups(ctx)
 	if err != nil {
-		panic(err)
+		CreateGithubIssueAndPanic(err, r)
 	}
 
 	ctx.Infof("Groups: %v", g)

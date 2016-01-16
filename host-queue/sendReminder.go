@@ -49,8 +49,9 @@ func sendSkipMessage(group Group, r *http.Request) {
 	c.Infof("hosts: %s", strings.Join(hosts[:], ","))
 	c.Infof("Email: %v", email)
 
+	subject := "Re: This weeks hosting reminder for " + group.GroupName
 	html := fmt.Sprintf(skipMessage, strings.Join(hosts[:], ", "))
-	sendEmail(email, "See you next week", html, r)
+	sendEmail(email, subject, html, r)
 }
 
 func sendHostConfirmedMessage(group Group, r *http.Request) {
@@ -70,7 +71,7 @@ func sendHostConfirmedMessage(group Group, r *http.Request) {
 	c.Infof("Email: %v", email)
 
 	html := fmt.Sprintf(confirmedMessage, group.Hosts[len(group.Hosts)-1].HostName, strings.Join(hosts[:], ", "))
-	sendEmail(email, "See you next week", html, r)
+	sendEmail(email, "Re: This weeks hosting reminder for "+group.GroupName, html, r)
 
 }
 
@@ -79,7 +80,7 @@ func sendEmail(email string, subject string, html string, r *http.Request) {
 
 	creds, err := GetCreds(c)
 	if err != nil {
-		panic(err)
+		CreateGithubIssueAndPanic(err, r)
 	}
 
 	sg := sendgrid.NewSendGridClient(creds.Username, creds.Pass)
@@ -95,7 +96,7 @@ func sendEmail(email string, subject string, html string, r *http.Request) {
 	if err != nil {
 		//TODO:  autocreate an issue in github if this is unique in the last month
 		c.Infof("Message: %v", message)
-		panic(err)
+		CreateGithubIssueAndPanic(err, r)
 	}
 }
 
