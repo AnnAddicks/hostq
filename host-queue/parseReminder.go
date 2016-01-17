@@ -93,8 +93,11 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*Pull all the groups and loop through to find the email address.
-  I need to learn more about querying app engines datastore to make this nicer.*/
+/* Pull all the groups and loop through to find the email address.
+I need to learn more about querying app engines datastore to make this nicer.
+Also, the email may be part of multiple groups (ex:  dining in and role playing
+beer rotation) and we need another identifier to find the appropriate group.
+*/
 func findGroup(ctx appengine.Context, from string) (Group, error) {
 	groups, err := GetGroups(ctx)
 	var g Group
