@@ -82,6 +82,8 @@ func IncomingMail(w http.ResponseWriter, r *http.Request) {
 			sendReminder(g, r)
 			ctx.Infof("Match No")
 		case "skip":
+			g.Next = 0
+			g.save(ctx)
 			//Respond with the current turn order for next week
 			sendSkipMessage(g, r)
 			ctx.Infof("Match Skip")
