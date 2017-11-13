@@ -48,13 +48,11 @@ func DisplayGroupStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func convertToStatus(group Group) Status {
-	var status Status
-
-	status.Name = group.GroupName
-	status.Next = group.Next
-	status.Hosts = group.Hosts
-
-	return status
+	return Status{
+		Name: group.GroupName,
+		Next: group.Next,
+		Hosts: group.Hosts,
+		}
 }
 
 func isValidUUID(text string) bool {
